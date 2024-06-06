@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Driver: Real-time Location Viewer</title>
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
+    <link
+      href="https://api.tiles.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
+    <style>
+      #map {
+        height: 400px;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Driver: View Assigned Location</h1>
+    <div id="map"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      let map;
+      let socket = io("http://localhost:5000/");
+      const driverId = "7"; // Use the actual driver's ID
+
+      mapboxgl.accessToken =
+        "pk.eyJ1IjoiZG9uYWxkbGVvbjMwIiwiYSI6ImNsd2J1eHJxeTB0d3oyamxkZjhzOXd1dGcifQ.9fPGQ1STclCiXXH5MZcmgg";
+      map = new mapboxgl.Map({
+        container: "map",
+        style: "mapbox://styles/mapbox/streets-v11",
+        center: [30.0003, 31.1889],
+        zoom: 10,
+      });
+
+      socket.on("connect", () => {
+        socket.emit("joinDriverRoom", driverId);
+      });
+
+      socket.on("locationAssigned", function (data) {
+        console.log("Assigned location:", data);
+        new mapboxgl.Marker().setLngLat([data.lng, data.lat]).addTo(map);
+      });
+    </script>
+  </body>
+</html>

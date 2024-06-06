@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Real-time Location Tracking</title>
+    <script src="https://www.bing.com/api/maps/mapcontrol?key=AIzaSyAZDyiw6PjRn97oPGcJ5UcXEF79I1bEF9s"></script>
+    <style>
+      #map {
+        height: 400px;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Real-time Location Tracking</h1>
+    <div id="map"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      let map;
+      let socket = io("http://localhost:5000/");
+
+      function initMap() {
+        map = new Microsoft.Maps.Map("#map", {
+          center: new Microsoft.Maps.Location(0, 0),
+          zoom: 8,
+        });
+
+        // Add click event listener to allow adding location
+        Microsoft.Maps.Events.addHandler(map, "click", function (event) {
+          const location = {
+            lat: event.location.latitude,
+            lng: event.location.longitude,
+          };
+          addLocation(location);
+        });
+      }
+
+      function addLocation(location) {
+        // Emit location data to the server
+        socket.emit("addLocation", location);
+      }
+
+      socket.on("locationAdded", function (data) {
+        console.log("New location added:", data);
+        // Update map with new location
+        const pin = new Microsoft.Maps.Pushpin(
+          new Microsoft.Maps.Location(data.lat, data.lng)
+        );
+        map.entities.push(pin);
+      });
+
+      socket.on("locationUpdated", function (data) {
+        console.log("Location updated:", data);
+        // Update map with updated location
+        const pin = new Microsoft.Maps.Pushpin(
+          new Microsoft.Maps.Location(data.lat, data.lng)
+        );
+        map.entities.push(pin);
+        for (let i = 0; i < map.entities.getLength(); i++) {
+          const entity = map.entities.get(i);
+          if (entity instanceof Microsoft.Maps.Pushpin) {
+            entity.setLocation(new Microsoft.Maps.Location(data.lat, data.lng));
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

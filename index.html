@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>User: Real-time Location Picker</title>
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
+    <link
+      href="https://api.tiles.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
+    <style>
+      #map {
+        height: 400px;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>User: Pick a Location</h1>
+    <div id="map"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      let map;
+      let socket = io("http://localhost:5000/");
+
+      mapboxgl.accessToken =
+        "pk.eyJ1IjoiZG9uYWxkbGVvbjMwIiwiYSI6ImNsd2J1eHJxeTB0d3oyamxkZjhzOXd1dGcifQ.9fPGQ1STclCiXXH5MZcmgg";
+      map = new mapboxgl.Map({
+        container: "map",
+        style: "mapbox://styles/mapbox/streets-v11",
+        center: [30.0003, 31.1889],
+        zoom: 10,
+      });
+
+      map.addControl(new mapboxgl.NavigationControl());
+      map.addControl(
+        new mapboxgl.GeolocateControl({
+          positionOptions: {
+            enableHighAccuracy: true,
+          },
+          trackUserLocation: true,
+        })
+      );
+
+      map.on("load", function () {
+        map.on("click", function (event) {
+          const location = {
+            lat: event.lngLat.lat,
+            lng: event.lngLat.lng,
+          };
+          addLocation(location);
+        });
+      });
+
+      function addLocation(location) {
+        socket.emit("addLocation", {
+          lat: location.lat,
+          long: location.lng,
+          driverId: "7", //change this later
+        });
+      }
+    </script>
+  </body>
+</html>
