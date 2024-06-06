@@ -25,7 +25,7 @@
       let socket = io("http://localhost:5000/");
 
       mapboxgl.accessToken =
-        "pk.eyJ1IjoiZG9uYWxkbGVvbjMwIiwiYSI6ImNsd2J1eHJxeTB0d3oyamxkZjhzOXd1dGcifQ.9fPGQ1STclCiXXH5MZcmgg";
+        secrets.mapAccessToken;
       map = new mapboxgl.Map({
         container: "map",
         style: "mapbox://styles/mapbox/streets-v11",
